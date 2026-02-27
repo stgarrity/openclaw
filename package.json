@@ -233,7 +233,8 @@
     "node-llama-cpp": "3.16.2"
   },
   "optionalDependencies": {
-    "@discordjs/opus": "^0.10.0"
+    "@discordjs/opus": "^0.10.0",
+    "@sentry/node": "^10.40.0"
   },
   "engines": {
     "node": ">=22.12.0"

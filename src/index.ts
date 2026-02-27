@@ -28,6 +28,7 @@ import {
   PortInUseError,
 } from "./infra/ports.js";
 import { assertSupportedRuntime } from "./infra/runtime-guard.js";
+import { initSentry, sentryCaptureException } from "./infra/sentry.js";
 import { installUnhandledRejectionHandler } from "./infra/unhandled-rejections.js";
 import { enableConsoleCapture } from "./logging.js";
 import { runCommandWithTimeout, runExec } from "./process/exec.js";
@@ -82,12 +83,16 @@ if (isMain) {
   installUnhandledRejectionHandler();
 
   process.on("uncaughtException", (error) => {
+    sentryCaptureException(error);
     console.error("[openclaw] Uncaught exception:", formatUncaughtError(error));
     process.exit(1);
   });
 
-  void program.parseAsync(process.argv).catch((err) => {
-    console.error("[openclaw] CLI failed:", formatUncaughtError(err));
-    process.exit(1);
-  });
+  void initSentry()
+    .then(() => program.parseAsync(process.argv))
+    .catch((err) => {
+      sentryCaptureException(err);
+      console.error("[openclaw] CLI failed:", formatUncaughtError(err));
+      process.exit(1);
+    });
 }

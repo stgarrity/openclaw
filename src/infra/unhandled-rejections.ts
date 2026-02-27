@@ -1,5 +1,6 @@
 import process from "node:process";
 import { extractErrorCode, formatUncaughtError } from "./errors.js";
+import { sentryCaptureException } from "./sentry.js";
 
 type UnhandledRejectionHandler = (reason: unknown) => boolean;
 
@@ -245,6 +246,7 @@ export function installUnhandledRejectionHandler(): void {
     }
 
     if (isFatalError(reason)) {
+      sentryCaptureException(reason);
       console.error("[openclaw] FATAL unhandled rejection:", formatUncaughtError(reason));
       process.exit(1);
       return;
@@ -265,6 +267,7 @@ export function installUnhandledRejectionHandler(): void {
     }
 
     console.error("[openclaw] Unhandled promise rejection:", formatUncaughtError(reason));
+    sentryCaptureException(reason);
     process.exit(1);
   });
 }
